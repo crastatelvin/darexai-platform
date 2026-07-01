@@ -2,74 +2,85 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withAuth, ProtectedRouteContext } from '@/lib/protected-route';
 import { db } from '@/lib/db';
 import { mongoDb } from '@/lib/mongodb';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import Groq from 'groq-sdk';
 
-// Declare Gemini tools
-const GEMINI_TOOLS = [
+// Declare Groq tools in standard OpenAI format
+const GROQ_TOOLS: any[] = [
   {
-    functionDeclarations: [
-      {
-        name: 'search_contacts',
-        description: 'Search for customer contacts in this tenant by name or email.',
-        parameters: {
-          type: 'OBJECT',
-          properties: {
-            query: { type: 'STRING', description: 'Name or email keyword' },
+    type: 'function',
+    function: {
+      name: 'search_contacts',
+      description: 'Search for customer contacts in this tenant by name or email.',
+      parameters: {
+        type: 'object',
+        properties: {
+          query: { type: 'string', description: 'Name or email keyword' },
+        },
+        required: ['query'],
+      },
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'create_task',
+      description: 'Create a reminder or follow-up task for a user and contact.',
+      parameters: {
+        type: 'object',
+        properties: {
+          title: { type: 'string', description: 'Title of the task' },
+          description: { type: 'string', description: 'Detailed description' },
+          dueDateDaysFromNow: { type: 'number', description: 'Days from now the task is due' },
+          contactName: { type: 'string', description: 'Name of the contact this task is associated with' },
+        },
+        required: ['title'],
+      },
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'update_opportunity',
+      description: 'Update the status or pipeline stage of an existing opportunity.',
+      parameters: {
+        type: 'object',
+        properties: {
+          opportunityTitle: { type: 'string', description: 'Title of the opportunity to update' },
+          status: { 
+            type: 'string', 
+            description: 'New status stage',
+            enum: ['NEW', 'QUALIFYING', 'PROPOSAL', 'NEGOTIATION', 'WON', 'LOST']
           },
-          required: ['query'],
         },
+        required: ['opportunityTitle', 'status'],
       },
-      {
-        name: 'create_task',
-        description: 'Create a reminder or follow-up task for a user and contact.',
-        parameters: {
-          type: 'OBJECT',
-          properties: {
-            title: { type: 'STRING', description: 'Title of the task' },
-            description: { type: 'STRING', description: 'Detailed description' },
-            dueDateDaysFromNow: { type: 'NUMBER', description: 'Days from now the task is due' },
-            contactName: { type: 'STRING', description: 'Name of the contact this task is associated with' },
-          },
-          required: ['title'],
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'send_whatsapp',
+      description: 'Send a simulated WhatsApp message to a customer.',
+      parameters: {
+        type: 'object',
+        properties: {
+          contactName: { type: 'string', description: 'Name of the contact' },
+          messageText: { type: 'string', description: 'The text content to send' },
         },
+        required: ['contactName', 'messageText'],
       },
-      {
-        name: 'update_opportunity',
-        description: 'Update the status or pipeline stage of an existing opportunity.',
-        parameters: {
-          type: 'OBJECT',
-          properties: {
-            opportunityTitle: { type: 'STRING', description: 'Title of the opportunity to update' },
-            status: { 
-              type: 'STRING', 
-              description: 'New status stage',
-              enum: ['NEW', 'QUALIFYING', 'PROPOSAL', 'NEGOTIATION', 'WON', 'LOST']
-            },
-          },
-          required: ['opportunityTitle', 'status'],
-        },
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'fetch_business_metrics',
+      description: 'Fetch aggregate live CRM KPIs (Opportunities count, Revenue Pipeline, pending tasks).',
+      parameters: {
+        type: 'object',
+        properties: {},
       },
-      {
-        name: 'send_whatsapp',
-        description: 'Send a simulated WhatsApp message to a customer.',
-        parameters: {
-          type: 'OBJECT',
-          properties: {
-            contactName: { type: 'STRING', description: 'Name of the contact' },
-            messageText: { type: 'STRING', description: 'The text content to send' },
-          },
-          required: ['contactName', 'messageText'],
-        },
-      },
-      {
-        name: 'fetch_business_metrics',
-        description: 'Fetch aggregate live CRM KPIs (Opportunities count, Revenue Pipeline, pending tasks).',
-        parameters: {
-          type: 'OBJECT',
-          properties: {},
-        },
-      },
-    ],
+    }
   },
 ];
 
@@ -266,8 +277,8 @@ export const POST = withAuth(async (req: NextRequest, ctx: ProtectedRouteContext
     take: 15,
   });
 
-  const apiKey = process.env.GEMINI_API_KEY;
-  const isMock = !apiKey || apiKey === 'your-gemini-api-key';
+  const apiKey = process.env.GROQ_API_KEY;
+  const isMock = !apiKey || apiKey === 'your-groq-api-key';
 
   const encoder = new TextEncoder();
 
@@ -279,7 +290,7 @@ export const POST = withAuth(async (req: NextRequest, ctx: ProtectedRouteContext
 
       if (isMock) {
         // MOCK AI IMPLEMENTATION (Fallback)
-        controller.enqueue(encoder.encode(JSON.stringify({ type: 'text', text: '*[Running in Mock Mode - No Gemini API Key]*\n\n' }) + '\n'));
+        controller.enqueue(encoder.encode(JSON.stringify({ type: 'text', text: '*[Running in Mock Mode - No Groq API Key]*\n\n' }) + '\n'));
         
         const lowerMsg = message.toLowerCase();
         let replyText = '';
@@ -305,7 +316,7 @@ export const POST = withAuth(async (req: NextRequest, ctx: ProtectedRouteContext
           const result = await executeTool('update_opportunity', { opportunityTitle: 'AI Consultation', status: 'PROPOSAL' }, ctx);
           replyText = `I've updated the opportunity stage to PROPOSAL. Next recommended action: "${result.nextBestAction}".`;
         } else {
-          replyText = `Hello! I am your AI Business Agent. You can ask me to search contacts, create tasks, update CRM opportunities, fetch business metrics, or send WhatsApp messages. Since you haven't configured a Gemini API Key yet, I am running in Mock Mode, but I can still execute database actions!`;
+          replyText = `Hello! I am your AI Business Agent. You can ask me to search contacts, create tasks, update CRM opportunities, fetch business metrics, or send WhatsApp messages. Since you haven't configured a Groq API Key yet, I am running in Mock Mode, but I can still execute database actions!`;
         }
 
         // Stream simulated output chunk by chunk
@@ -325,65 +336,76 @@ export const POST = withAuth(async (req: NextRequest, ctx: ProtectedRouteContext
         });
 
       } else {
-        // REAL GEMINI API INTEGRATION
+        // REAL GROQ API INTEGRATION
         try {
-          const genAI = new GoogleGenerativeAI(apiKey);
-          const model = genAI.getGenerativeModel({
-            model: 'gemini-1.5-flash',
-            systemInstruction: 'You are DareXAI, an active AI Business Assistant for a business operations portal. You assist the business owner by using the provided tools to search contacts, update CRM pipelines, schedule follow-up tasks, trigger WhatsApp communications, and display aggregate database metrics. Keep replies concise and action-oriented. Be professional.',
+          const groq = new Groq({ apiKey });
+          
+          // Formulate messages list (system prompt + history + current message)
+          const messagesPayload: any[] = [
+            {
+              role: 'system',
+              content: 'You are DareXAI, an active AI Business Assistant for a business operations portal. You assist the business owner by using the provided tools to search contacts, update CRM pipelines, schedule follow-up tasks, trigger WhatsApp communications, and display aggregate database metrics. Keep replies concise and action-oriented. Be professional.',
+            }
+          ];
+
+          // Map history (excluding the current user message just created)
+          historyMessages.slice(0, -1).forEach(m => {
+            messagesPayload.push({
+              role: m.sender === 'assistant' ? 'assistant' : 'user',
+              content: m.text
+            });
           });
 
-          // Format chat history for Gemini (excluding the last user message just created)
-          const geminiHistory = historyMessages
-            .slice(0, -1)
-            .map((msg) => ({
-              role: msg.sender === 'assistant' ? 'model' : 'user',
-              parts: [{ text: msg.text }],
-            }));
-
-          const chat = model.startChat({
-            history: geminiHistory,
-            generationConfig: { maxOutputTokens: 1000 },
+          // Add current message
+          messagesPayload.push({
+            role: 'user',
+            content: message
           });
 
-          // Send message with tools
-          const result = await chat.sendMessage(message, {
-            tools: GEMINI_TOOLS,
+          // Make non-streaming call to evaluate tool calling
+          const completion = await groq.chat.completions.create({
+            model: 'llama-3.3-70b-versatile',
+            messages: messagesPayload,
+            tools: GROQ_TOOLS,
+            tool_choice: 'auto',
           });
 
-          const response = result.response;
-          const calls = response.functionCalls();
-
+          const choice = completion.choices[0];
           let finalReplyText = '';
 
-          if (calls && calls.length > 0) {
-            // Process the first tool call
-            const call = calls[0];
-            controller.enqueue(encoder.encode(JSON.stringify({ type: 'tool', toolName: call.name, args: call.args }) + '\n'));
-            
+          if (choice.message.tool_calls && choice.message.tool_calls.length > 0) {
+            const toolCall = choice.message.tool_calls[0];
+            const args = JSON.parse(toolCall.function.arguments);
+
+            controller.enqueue(encoder.encode(JSON.stringify({ type: 'tool', toolName: toolCall.function.name, args }) + '\n'));
+
             // Execute tool action
-            const toolResult = await executeTool(call.name, call.args, ctx);
+            const toolResult = await executeTool(toolCall.function.name, args, ctx);
 
-            // Send tool result back to Gemini
-            const followUpResult = await chat.sendMessage([
-              {
-                functionResponse: {
-                  name: call.name,
-                  response: toolResult,
-                },
-              },
-            ]);
+            // Execute follow-up call with tool results
+            const secondCompletion = await groq.chat.completions.create({
+              model: 'llama-3.3-70b-versatile',
+              messages: [
+                ...messagesPayload,
+                choice.message,
+                {
+                  role: 'tool',
+                  tool_call_id: toolCall.id,
+                  content: JSON.stringify(toolResult)
+                }
+              ]
+            });
 
-            // Stream follow-up text response
-            const responseText = followUpResult.response.text();
-            finalReplyText = responseText;
-            controller.enqueue(encoder.encode(JSON.stringify({ type: 'text', text: responseText }) + '\n'));
+            finalReplyText = secondCompletion.choices[0].message.content || '';
           } else {
-            // No tool calling, stream text directly
-            // Note: Since we used sendMessage, we get full response. We can stream it locally.
-            const responseText = response.text();
-            finalReplyText = responseText;
-            controller.enqueue(encoder.encode(JSON.stringify({ type: 'text', text: responseText }) + '\n'));
+            finalReplyText = choice.message.content || '';
+          }
+
+          // Stream the text response chunk by chunk to client for uniform frontend animation
+          const words = finalReplyText.split(' ');
+          for (const word of words) {
+            controller.enqueue(encoder.encode(JSON.stringify({ type: 'text', text: word + ' ' }) + '\n'));
+            await new Promise((resolve) => setTimeout(resolve, 20));
           }
 
           // Save assistant's reply in MongoDB
@@ -395,12 +417,13 @@ export const POST = withAuth(async (req: NextRequest, ctx: ProtectedRouteContext
             },
           });
 
-        } catch (geminiError: any) {
-          console.error('Gemini API Error:', geminiError);
-          controller.enqueue(encoder.encode(JSON.stringify({ type: 'text', text: `Error contacting Gemini API: ${geminiError.message || geminiError}. Falling back to text.` }) + '\n'));
+        } catch (groqError: any) {
+          console.error('Groq API Error:', groqError);
+          controller.enqueue(encoder.encode(JSON.stringify({ type: 'text', text: `Error contacting Groq API: ${groqError.message || groqError}.` }) + '\n'));
         }
       }
 
+      controller.enqueue(encoder.encode(JSON.stringify({ type: 'text', text: '' }) + '\n'));
       controller.close();
     },
   });

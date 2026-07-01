@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withAuth, ProtectedRouteContext } from '@/lib/protected-route';
 import { db } from '@/lib/db';
 import { mongoDb } from '@/lib/mongodb';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import Groq from 'groq-sdk';
 
 export const POST = withAuth(async (req: NextRequest, ctx: ProtectedRouteContext) => {
   const { tenantId, userId } = ctx;
@@ -38,8 +38,8 @@ export const POST = withAuth(async (req: NextRequest, ctx: ProtectedRouteContext
 
   // 2. AI Qualification
   executionLogs.push(`[2/5] Running AI Lead Qualification Analysis...`);
-  const apiKey = process.env.GEMINI_API_KEY;
-  const isMock = !apiKey || apiKey === 'your-gemini-api-key';
+  const apiKey = process.env.GROQ_API_KEY;
+  const isMock = !apiKey || apiKey === 'your-groq-api-key';
 
   let qualificationScore = 50;
   let qualificationReasoning = '';
@@ -60,10 +60,9 @@ export const POST = withAuth(async (req: NextRequest, ctx: ProtectedRouteContext
     executionLogs.push(`[Mock AI] Assigned qualification score: ${qualificationScore}`);
   } else {
     try {
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const groq = new Groq({ apiKey });
       
-      const prompt = `Analyze the following business lead's profile details and assign an qualification score from 0 to 100 representing commercial sales potential.
+      const prompt = `Analyze the following business lead's profile details and assign a qualification score from 0 to 100 representing commercial sales potential.
 Provide your response strictly in JSON format. JSON keys: "score" (number), "reasoning" (string).
 
 Lead profile:
@@ -71,21 +70,19 @@ Name: ${name}
 Email: ${email}
 Notes: ${notes || 'No description provided.'}`;
 
-      const response = await model.generateContent(prompt);
-      const text = response.response.text();
+      const chatCompletion = await groq.chat.completions.create({
+        model: 'llama-3.3-70b-versatile',
+        messages: [{ role: 'user', content: prompt }],
+        response_format: { type: 'json_object' } // Groq JSON response format enforce
+      });
       
-      // Extract JSON block
-      const jsonStart = text.indexOf('{');
-      const jsonEnd = text.lastIndexOf('}') + 1;
-      if (jsonStart !== -1 && jsonEnd !== -1) {
-        const parsed = JSON.parse(text.substring(jsonStart, jsonEnd));
-        qualificationScore = parsed.score || 50;
-        qualificationReasoning = parsed.reasoning || '';
-      } else {
-        qualificationScore = 65;
-        qualificationReasoning = 'Default score. Failed to parse AI JSON response.';
-      }
-      executionLogs.push(`[Gemini AI] Assigned qualification score: ${qualificationScore}`);
+      const text = chatCompletion.choices[0].message.content || '{}';
+      const parsed = JSON.parse(text);
+      
+      qualificationScore = parsed.score ?? 50;
+      qualificationReasoning = parsed.reasoning || '';
+      
+      executionLogs.push(`[Groq AI] Assigned qualification score: ${qualificationScore}`);
     } catch (err: any) {
       console.error('AI Qualification error:', err);
       qualificationScore = 60;
@@ -94,7 +91,7 @@ Notes: ${notes || 'No description provided.'}`;
     }
   }
 
-  executionLogs.push(`Qualification Decision Point: Score is ${qualificationScore}. Threshold is 80.`);
+  executionLogs.push(`Decision Point: Qualification Score is ${qualificationScore}. Threshold is 80.`);
 
   let autoWhatsAppSent = false;
   let autoTaskCreated = false;
