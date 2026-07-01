@@ -111,13 +111,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Auto-hydrate mock data for tenant
-    try {
-      const { seedTenantData } = await import('@/lib/seed');
-      await seedTenantData(user.tenantId);
-    } catch (seedErr) {
-      console.error('Failed to seed user tenant data:', seedErr);
-    }
+
 
     // Generate JWT access & refresh tokens
     const accessToken = signAccessToken({ userId: user.id, tenantId: user.tenantId });

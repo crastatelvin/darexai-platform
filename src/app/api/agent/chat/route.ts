@@ -277,7 +277,11 @@ export const POST = withAuth(async (req: NextRequest, ctx: ProtectedRouteContext
     take: 15,
   });
 
-  const apiKey = process.env.GROQ_API_KEY;
+  const tenantSettings = await db.tenantSettings.findUnique({
+    where: { tenantId },
+  });
+
+  const apiKey = tenantSettings?.groqApiKey || process.env.GROQ_API_KEY;
   const isMock = !apiKey || apiKey === 'your-groq-api-key';
 
   const encoder = new TextEncoder();

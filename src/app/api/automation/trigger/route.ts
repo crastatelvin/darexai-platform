@@ -38,8 +38,14 @@ export const POST = withAuth(async (req: NextRequest, ctx: ProtectedRouteContext
 
   // 2. AI Qualification
   executionLogs.push(`[2/5] Running AI Lead Qualification Analysis...`);
-  const apiKey = process.env.GROQ_API_KEY;
+  const tenantSettings = await db.tenantSettings.findUnique({
+    where: { tenantId },
+  });
+
+  const apiKey = tenantSettings?.groqApiKey || process.env.GROQ_API_KEY;
   const isMock = !apiKey || apiKey === 'your-groq-api-key';
+  const threshold = tenantSettings?.leadScoreThreshold ?? 80;
+  const enableAutoReply = tenantSettings?.autoWhatsappReply ?? true;
 
   let qualificationScore = 50;
   let qualificationReasoning = '';
@@ -91,14 +97,14 @@ Notes: ${notes || 'No description provided.'}`;
     }
   }
 
-  executionLogs.push(`Decision Point: Qualification Score is ${qualificationScore}. Threshold is 80.`);
+  executionLogs.push(`Decision Point: Qualification Score is ${qualificationScore}. Threshold is ${threshold}. Auto-reply: ${enableAutoReply ? 'ENABLED' : 'DISABLED'}`);
 
   let autoWhatsAppSent = false;
   let autoTaskCreated = false;
 
-  // 3. Score > 80 Actions
-  if (qualificationScore > 80) {
-    executionLogs.push(`[3/5] Score > 80: Triggering automated outreach and follow-up creation.`);
+  // 3. Score > Threshold Actions
+  if (qualificationScore > threshold && enableAutoReply) {
+    executionLogs.push(`[3/5] Score > ${threshold} and auto-reply enabled: Triggering outreach and follow-up creation.`);
 
     // A. Send Simulated WhatsApp
     const messageBody = `Hi ${name}! Thanks for reaching out to us. Your inquiry about our services has been pre-qualified for our Accelerated Pilot Program. Let's schedule a kickoff call this week! Book here: calendly.com/darexai/kickoff.`;
@@ -136,7 +142,7 @@ Notes: ${notes || 'No description provided.'}`;
     autoTaskCreated = true;
     executionLogs.push(`Created CRM follow-up task: "${taskTitle}" (due tomorrow).`);
   } else {
-    executionLogs.push(`[3/5] Score <= 80: Skipped automated outreach and task creation. Lead marked for manual review.`);
+    executionLogs.push(`[3/5] Score <= ${threshold} or auto-reply disabled: Skipped automated outreach. Marked for manual review.`);
   }
 
   // 4. Record Audit Log in PostgreSQL
