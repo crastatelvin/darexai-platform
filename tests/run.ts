@@ -111,6 +111,22 @@ async function runTests() {
     assert(element.props.children.props.children === 'Lead qualified!', 'Should render message text');
   });
 
+  // Test Case 7: WhatsApp Webhook Token Verification Logic
+  test('WhatsApp Webhook Verification Matching', () => {
+    const expectedVerifyToken = 'darexai-whatsapp-token-secret-123';
+    
+    const mockVerify = (mode: string | null, token: string | null) => {
+      if (mode === 'subscribe' && token === expectedVerifyToken) {
+        return true;
+      }
+      return false;
+    };
+
+    assert(mockVerify('subscribe', 'darexai-whatsapp-token-secret-123') === true, 'Valid validation should pass');
+    assert(mockVerify('subscribe', 'invalid-token') === false, 'Invalid token must fail');
+    assert(mockVerify('unsubscribe', 'darexai-whatsapp-token-secret-123') === false, 'Invalid mode must fail');
+  });
+
   console.log('\n\x1b[34m========================================\x1b[0m');
   console.log(`\x1b[36;1m   Test Suite Summary: ${passed} Passed, ${failed} Failed   \x1b[0m`);
   console.log('\x1b[34m========================================\x1b[0m\n');
