@@ -112,7 +112,6 @@ export async function GET(request: NextRequest) {
     }
 
 
-
     // Generate JWT access & refresh tokens
     const accessToken = signAccessToken({ userId: user.id, tenantId: user.tenantId });
     const refreshTokenString = signRefreshToken(user.id);
