@@ -11,7 +11,10 @@ import {
   Zap, 
   LogOut,
   Sparkles,
-  Building2
+  Building2,
+  Settings,
+  Globe,
+  Home
 } from 'lucide-react';
 
 interface UserProfile {
@@ -58,11 +61,16 @@ export default function DashboardLayout({
   };
 
   const navItems = [
-    { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'CRM Pipeline', href: '/dashboard/crm', icon: Users },
-    { name: 'AI Business Agent', href: '/dashboard/agent', icon: Bot },
-    { name: 'Unified Inbox', href: '/dashboard/timeline', icon: Mail },
-    { name: 'Lead Automation', href: '/dashboard/automation', icon: Zap },
+    { name: 'Home', href: '/dashboard', icon: Home },
+    { name: 'Conversations', href: '/dashboard/conversations', icon: Mail },
+    { name: 'Opportunities', href: '/dashboard/crm', icon: Users },
+    { name: 'Actions', href: '/dashboard/actions', icon: Zap },
+    { name: 'Insights', href: '/dashboard/insights', icon: Bot },
+  ];
+
+  const workspaceItems = [
+    { name: 'Integrations', href: '/dashboard/integrations', icon: Globe },
+    { name: 'Settings', href: '/dashboard/settings', icon: Settings },
   ];
 
   return (
@@ -93,16 +101,41 @@ export default function DashboardLayout({
                   href={item.href}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition duration-200 ${
                     isActive 
-                      ? 'bg-blue-500/10 border border-blue-500/20 text-blue-400' 
-                      : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
+                      ? 'bg-zinc-800 border border-zinc-700/60 text-white' 
+                      : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
                   }`}
                 >
-                  <Icon className="w-4 h-4" />
+                  <Icon className="w-4 h-4 text-zinc-400" />
                   {item.name}
                 </Link>
               );
             })}
           </nav>
+
+          {/* Workspace Links */}
+          <div className="mt-8">
+            <span className="px-3 text-[10px] font-bold text-zinc-500 uppercase tracking-widest block mb-2">Workspace</span>
+            <nav className="space-y-1.5">
+              {workspaceItems.map((item) => {
+                const isActive = pathname === item.href;
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition duration-200 ${
+                      isActive 
+                        ? 'bg-zinc-800 border border-zinc-700/60 text-white' 
+                        : 'text-zinc-400 hover:bg-zinc-800/30 hover:text-zinc-200'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4 text-zinc-400" />
+                    {item.name}
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
         </div>
 
         {/* Profile Card / Footer */}
