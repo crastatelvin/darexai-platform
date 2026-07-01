@@ -37,17 +37,29 @@ export default function AgentChat() {
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
+  const changeActiveChat = (id: string | null) => {
+    setActiveConvId(id);
+    if (typeof window !== 'undefined') {
+      if (id) {
+        sessionStorage.setItem('active_chat_id', id);
+      } else {
+        sessionStorage.removeItem('active_chat_id');
+      }
+    }
+  };
+
   // Fetch recent conversations
   const fetchConversations = async () => {
     try {
-      const res = await fetch('/api/crm/timeline'); // timeline fetches recent events, let's create a specific route for conversations if needed, or write a fallback fetch
-      // Let's query from conversations list
       const convsRes = await fetch('/api/agent/conversations');
       if (convsRes.ok) {
         const data = await convsRes.json();
         setConversations(data);
-        if (data.length > 0 && !activeConvId) {
-          setActiveConvId(data[0].id);
+        const savedId = typeof window !== 'undefined' ? sessionStorage.getItem('active_chat_id') : null;
+        if (savedId && data.some((c: any) => c.id === savedId)) {
+          setActiveConvId(savedId);
+        } else if (data.length > 0 && !activeConvId) {
+          changeActiveChat(data[0].id);
         }
       }
     } catch (err) {
@@ -85,7 +97,7 @@ export default function AgentChat() {
   }, [messages, isStreaming, activeTool]);
 
   const handleStartNewChat = () => {
-    setActiveConvId(null);
+    changeActiveChat(null);
     setMessages([]);
   };
 
@@ -150,7 +162,7 @@ export default function AgentChat() {
             if (data.type === 'meta') {
               // Update active conversation ID if it was a new conversation
               if (!activeConvId) {
-                setActiveConvId(data.conversationId);
+                changeActiveChat(data.conversationId);
                 fetchConversations();
               }
             } else if (data.type === 'tool') {
@@ -233,7 +245,7 @@ export default function AgentChat() {
               return (
                 <button
                   key={conv.id}
-                  onClick={() => setActiveConvId(conv.id)}
+                  onClick={() => changeActiveChat(conv.id)}
                   className={`w-full text-left px-3 py-2.5 rounded-lg text-xs font-semibold truncate transition duration-150 cursor-pointer ${
                     isActive 
                       ? 'bg-blue-500/10 border border-blue-500/20 text-blue-400' 
