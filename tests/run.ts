@@ -1,4 +1,5 @@
 import { signAccessToken, verifyToken, generatePKCE } from '../src/lib/auth';
+import { Alert } from '../src/components/Alert';
 
 function assert(condition: boolean, message: string) {
   if (!condition) {
@@ -100,6 +101,14 @@ async function runTests() {
     assert(getMockNextBestAction('QUALIFYING') === 'Book detailed solution consultation.', 'Qualifying stage action mismatch');
     assert(getMockNextBestAction('PROPOSAL') === 'Send detailed cost quote & RFP response.', 'Proposal stage action mismatch');
     assert(getMockNextBestAction('WON') === 'Kickstart implementation and team assignment.', 'Won stage action mismatch');
+  });
+
+  // Test Case 6: React Alert Component Virtual DOM Render Test
+  test('React Alert Component Render Output', () => {
+    const element = Alert({ type: 'success', message: 'Lead qualified!' });
+    assert(element !== null, 'Component element should render');
+    assert(element.props.className.includes('text-emerald-400'), 'Should contain success class');
+    assert(element.props.children.props.children === 'Lead qualified!', 'Should render message text');
   });
 
   console.log('\n\x1b[34m========================================\x1b[0m');

@@ -13,6 +13,7 @@ import {
   MessageSquare
 } from 'lucide-react';
 import Link from 'next/link';
+import { Alert } from '@/components/Alert';
 
 interface DashboardData {
   kpis: {
@@ -90,18 +91,7 @@ export default function DashboardOverview() {
         </h2>
         <div className="grid gap-3">
           {data.aiAlerts.map((alert, idx) => (
-            <div 
-              key={idx} 
-              className={`p-4 rounded-xl border flex items-start gap-3 transition ${
-                alert.type === 'success' ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-400' :
-                alert.type === 'warning' ? 'bg-amber-500/5 border-amber-500/20 text-amber-400' :
-                alert.type === 'danger' ? 'bg-red-500/5 border-red-500/20 text-red-400' :
-                'bg-blue-500/5 border-blue-500/20 text-blue-400'
-              }`}
-            >
-              <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
-              <div className="text-sm font-medium">{alert.message}</div>
-            </div>
+            <Alert key={idx} type={alert.type as any} message={alert.message} />
           ))}
         </div>
       </div>
