@@ -101,65 +101,67 @@ export async function seedTenantData(tenantId: string) {
 
   // 4. Create Unified Inbox Timeline Events in MongoDB
   try {
-    await mongoDb.timelineEvent.createMany({
-      data: [
-        {
-          tenantId,
-          contactId: contact1.id,
-          type: 'email',
-          direction: 'inbound',
-          title: 'Request for AI Integration Consultation',
-          body: "Hi Team,\n\nWe are looking to implement generative AI features inside our CRM system. Can we schedule a brief 30-minute discovery call to explore your consultation services?\n\nThanks,\nAlice",
-          sentiment: 'positive',
-          intent: 'sales',
-          createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
-        },
-        {
-          tenantId,
-          contactId: contact1.id,
-          type: 'email',
-          direction: 'outbound',
-          title: 'Re: Request for AI Integration Consultation',
-          body: 'Hello Alice,\n\nThanks for reaching out! We would be delighted to assist. Here is a scheduling link: calendly.com/darexai/discovery.\n\nBest regards,\nDareXAI Team',
-          sentiment: 'neutral',
-          intent: 'general',
-          createdAt: new Date(Date.now() - 3.5 * 60 * 60 * 1000), // 3.5 hours ago
-        },
-        {
-          tenantId,
-          contactId: contact2.id,
-          type: 'whatsapp',
-          direction: 'inbound',
-          title: 'WhatsApp Message from Bob',
-          body: 'Hey there, did you get a chance to review the licensing terms we sent yesterday? Let me know if we need a quick call.',
-          sentiment: 'neutral',
-          intent: 'sales',
-          createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
-        },
-        {
-          tenantId,
-          contactId: contact2.id,
-          type: 'call',
-          direction: 'outbound',
-          title: 'Outbound Call to Bob Smith',
-          body: 'Discussed pricing models and support SLA. Bob requested custom SLAs for high-availability setups. Proposal revision requested.',
-          sentiment: 'positive',
-          intent: 'sales',
-          createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-        },
-        {
-          tenantId,
-          contactId: contact3.id,
-          type: 'whatsapp',
-          direction: 'inbound',
-          title: 'WhatsApp Message from Charlie',
-          body: 'Hello, the invoice was paid this morning. Can you verify if the subscription has been renewed?',
-          sentiment: 'positive',
-          intent: 'support',
-          createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
-        },
-      ],
-    });
+    const eventsData = [
+      {
+        tenantId,
+        contactId: contact1.id,
+        type: 'email',
+        direction: 'inbound',
+        title: 'Request for AI Integration Consultation',
+        body: "Hi Team,\n\nWe are looking to implement generative AI features inside our CRM system. Can we schedule a brief 30-minute discovery call to explore your consultation services?\n\nThanks,\nAlice",
+        sentiment: 'positive',
+        intent: 'sales',
+        createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
+      },
+      {
+        tenantId,
+        contactId: contact1.id,
+        type: 'email',
+        direction: 'outbound',
+        title: 'Re: Request for AI Integration Consultation',
+        body: 'Hello Alice,\n\nThanks for reaching out! We would be delighted to assist. Here is a scheduling link: calendly.com/darexai/discovery.\n\nBest regards,\nDareXAI Team',
+        sentiment: 'neutral',
+        intent: 'general',
+        createdAt: new Date(Date.now() - 3.5 * 60 * 60 * 1000), // 3.5 hours ago
+      },
+      {
+        tenantId,
+        contactId: contact2.id,
+        type: 'whatsapp',
+        direction: 'inbound',
+        title: 'WhatsApp Message from Bob',
+        body: 'Hey there, did you get a chance to review the licensing terms we sent yesterday? Let me know if we need a quick call.',
+        sentiment: 'neutral',
+        intent: 'sales',
+        createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
+      },
+      {
+        tenantId,
+        contactId: contact2.id,
+        type: 'call',
+        direction: 'outbound',
+        title: 'Outbound Call to Bob Smith',
+        body: 'Discussed pricing models and support SLA. Bob requested custom SLAs for high-availability setups. Proposal revision requested.',
+        sentiment: 'positive',
+        intent: 'sales',
+        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+      },
+      {
+        tenantId,
+        contactId: contact3.id,
+        type: 'whatsapp',
+        direction: 'inbound',
+        title: 'WhatsApp Message from Charlie',
+        body: 'Hello, the invoice was paid this morning. Can you verify if the subscription has been renewed?',
+        sentiment: 'positive',
+        intent: 'support',
+        createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
+      },
+    ];
+
+    for (const e of eventsData) {
+      await mongoDb.timelineEvent.create({ data: e });
+    }
   } catch (mongoError) {
     console.error('Failed to seed MongoDB timeline logs:', mongoError);
   }

@@ -17,7 +17,7 @@ export async function GET() {
   const { codeVerifier, codeChallenge } = generatePKCE();
   const state = crypto.randomBytes(16).toString('hex');
 
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   
   // Save code verifier and state in secure HTTP-only cookies
   cookieStore.set('cv', codeVerifier, {

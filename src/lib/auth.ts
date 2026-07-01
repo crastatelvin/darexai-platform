@@ -38,8 +38,8 @@ export function generatePKCE() {
 }
 
 // Set auth cookies
-export function setAuthCookies(accessToken: string, refreshToken: string) {
-  const cookieStore = cookies();
+export async function setAuthCookies(accessToken: string, refreshToken: string) {
+  const cookieStore = await cookies();
   
   // Set access token
   cookieStore.set({
@@ -65,8 +65,8 @@ export function setAuthCookies(accessToken: string, refreshToken: string) {
 }
 
 // Clear auth cookies
-export function clearAuthCookies() {
-  const cookieStore = cookies();
+export async function clearAuthCookies() {
+  const cookieStore = await cookies();
   cookieStore.delete('access_token');
   cookieStore.delete('refresh_token');
 }

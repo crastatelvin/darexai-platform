@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get('code');
   const state = searchParams.get('state');
 
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const savedState = cookieStore.get('state')?.value;
   const codeVerifier = cookieStore.get('cv')?.value;
 
