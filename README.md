@@ -26,6 +26,7 @@
 ## 📋 Table of Contents
 
 - [Overview](#-overview)
+- [Application Preview](#-application-preview)
 - [Features](#-features)
 - [Architecture](#-architecture)
 - [Tech Stack](#-tech-stack)
@@ -46,6 +47,47 @@
 DareXAI is built to solve core business operation challenges: consolidating pipelines, managing customers, and automating manual communication tasks within a clean, multi-tenant workspace. 
 
 The application uses a **hybrid database model** (PostgreSQL + MongoDB) to combine strict ACID constraints for relational CRM models (deals, pipeline stages, users) with fast, horizontal timeline logs and chat history document structures. The backend implements secure tenant-isolated routes via middleware and headers, routes dynamic completions to the Groq API, and exposes a production-grade webhook receiver for simulated or real WhatsApp customer message parsing.
+
+---
+
+## 🖼️ Application Preview
+
+<div align="center">
+
+### 1) Landing Page & Sandbox Login
+![Landing Page](public/screenshots/01-landing-page.png)
+
+<br/>
+
+### 2) Dashboard Overview & Key Metrics
+![Dashboard Overview](public/screenshots/02-overview.png)
+
+<br/>
+
+### 3) Real-time CRM Kanban Board
+![CRM Kanban Board](public/screenshots/03-crm-kanban.png)
+
+<br/>
+
+### 4) Interactive AI Agent with Tool Calling
+![AI Agent](public/screenshots/04-ai-agent.png)
+
+<br/>
+
+### 5) Dedicated WhatsApp Inbox & Simulated Webhook Sandbox
+![WhatsApp Inbox](public/screenshots/05-whatsapp-inbox.png)
+
+<br/>
+
+### 6) Unified Inbox Timeline Logs
+![Unified Inbox Timeline](public/screenshots/06-unified-timeline.png)
+
+<br/>
+
+### 7) Automated Lead Qualification Runner
+![Lead Automation](public/screenshots/07-lead-automation.png)
+
+</div>
 
 ---
 
