@@ -2,7 +2,7 @@
 
 # 🧠 DAREXAI
 
-### AI-Powered Multi-Tenant CRM & Workflow Automation Platform
+### Autonomous Agentic Operations (Ops) CRM & Customer Communications Engine
 
 [![Next.js](https://img.shields.io/badge/Next.js-16.2%2B-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
@@ -13,7 +13,7 @@
 
 <br/>
 
-> **DareXAI** is an advanced, production-ready AI Business Operations & CRM Platform. Wired with secure multi-tenant database isolation, dynamic JWT OAuth & PKCE auth, real-time Kanban pipelines with AI recommendations, a streaming business agent, and a production-grade WhatsApp Meta Cloud CRM integration with simulated webhook sandbox overrides.
+> **DareXAI** is a production-grade Autonomous Agentic Operations & CRM Engine. Designed to function as an AI digital worker, it autonomously processes customer communications, executes database updates, manages pipelines, qualifies inbound leads, and handles customer messaging workflows (including WhatsApp Meta Cloud API integrations) using dynamic tool-calling and structured reasoning.
 
 <br/>
 
@@ -26,6 +26,7 @@
 ## 📋 Table of Contents
 
 - [Overview](#-overview)
+- [Agentic Autonomy & Ops Workflows](#-agentic-autonomy--ops-workflows)
 - [Application Preview](#-application-preview)
 - [Features](#-features)
 - [Architecture](#-architecture)
@@ -35,7 +36,7 @@
 - [Usage](#-usage)
 - [API Reference](#-api-reference)
 - [Configuration](#-configuration)
-- [Testing \& Verification](#-testing--verification)
+- [Testing & Verification](#-testing--verification)
 - [Security Notes](#-security-notes)
 - [Design Decisions](#-design-decisions)
 - [License](#-license)
@@ -47,6 +48,43 @@
 DareXAI is built to solve core business operation challenges: consolidating pipelines, managing customers, and automating manual communication tasks within a clean, multi-tenant workspace. 
 
 The application uses a **hybrid database model** (PostgreSQL + MongoDB) to combine strict ACID constraints for relational CRM models (deals, pipeline stages, users) with fast, horizontal timeline logs and chat history document structures. The backend implements secure tenant-isolated routes via middleware and headers, routes dynamic completions to the Groq API, and exposes a production-grade webhook receiver for simulated or real WhatsApp customer message parsing.
+
+---
+
+## 🤖 Agentic Autonomy & Ops Workflows
+
+DareXAI is built not just to record data, but to act autonomously as an Agentic Operator in your business. It bridges the gap between customer communication channels and backend databases through four primary autonomous agentic layers:
+
+```mermaid
+graph TD
+    A[Inbound Event: Webhook / Form / Chat] --> B{Agentic Reasoning Layer}
+    B -->|Tool Calling| C[Prisma ORM Database Operations]
+    B -->|Decision Tree| D[Lead Scoring & Route Matrix]
+    B -->|Llama-3.3 LLM| E[Structured Outbound Messaging]
+    C --> F[Automatic Task & CRM Pipeline Transitions]
+    D --> G[Autonomous Stage Escalation]
+    E --> H[WhatsApp / Email Dispatch]
+```
+
+### 1. Dynamic Tool-Calling Core
+Rather than relying on hardcoded logic, the **AI Business Agent** uses Groq's model to dynamically decide when and how to invoke tools:
+- **`search_contacts`**: Scans relational databases using semantic keywords to locate customer workspaces.
+- **`create_task`**: Autonomously registers follow-up items and links them to respective accounts when users mention reminders.
+- **`update_opportunity`**: Moves opportunities along stages in the CRM based on conversational status updates.
+- **`fetch_business_metrics`**: Computes pipeline statistics and filters performance data on demand.
+
+### 2. Autonomous Event Loop & Auto-Reply
+The WhatsApp CRM integration includes an autonomous responder:
+- **Sentiment & Intent Classifier**: Analyzes incoming messages to determine customer mood and purchase intent.
+- **Automated Answer Generator**: Drafts and sends contextually appropriate, brand-aligned replies without human intervention, maintaining state within the MongoDB timeline database.
+
+### 3. Structured Lead Qualification Pipeline
+The platform includes an automated qualification pipeline:
+- **Zero-Shot Evaluation**: Scores inbound leads on multiple dimensions (budget, timeline, readiness) using structured JSON output.
+- **Auto-Escalation**: Triggers follow-up actions, generates appropriate CRM deals, and issues alerts based on the computed qualification threshold.
+
+### 4. Tenant-Isolated Multi-Workspace Security
+All agentic tool executions are strictly bound to the requesting client's tenant space, preventing database leaking or cross-organization execution anomalies.
 
 ---
 
