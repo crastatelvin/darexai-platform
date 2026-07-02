@@ -2,6 +2,17 @@
   "name": "darexai-platform",
   "version": "0.1.0",
   "private": true,
+  "description": "Autonomous Agentic Operations (Ops) CRM & Customer Communications Engine",
+  "keywords": [
+    "agentic",
+    "ops",
+    "crm",
+    "whatsapp-integration",
+    "nextjs",
+    "groq-sdk",
+    "multi-tenant",
+    "prisma"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",
