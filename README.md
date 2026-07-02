@@ -18,6 +18,8 @@
 <br/>
 
 ![Database](https://img.shields.io/badge/Database-PostgreSQL_%2B_MongoDB-blue?style=for-the-badge) ![AI Engine](https://img.shields.io/badge/Groq-Llama_3.3_70b-orange?style=for-the-badge) ![Authentication](https://img.shields.io/badge/Security-JWT_Auth_%2B_PKCE_Verifier-purple?style=for-the-badge) ![WhatsApp Integration](https://img.shields.io/badge/WhatsApp-Meta_Cloud_API-emerald?style=for-the-badge)
+<br/>
+![Agentic Ops](https://img.shields.io/badge/Agentic_Ops-Workflows-violet?style=for-the-badge) ![CRM](https://img.shields.io/badge/CRM-Sales_Pipeline-teal?style=for-the-badge) ![Multi-Tenant](https://img.shields.io/badge/Tenant_Isolation-Strict-orange?style=for-the-badge)
 
 </div>
 
