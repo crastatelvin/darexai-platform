@@ -2,7 +2,6 @@
 
 <img src="public/images/darexai-logo.png" alt="DAREXAI logo" width="180"/>
 
-# 🧠 DAREXAI
 
 ### Autonomous Agentic Operations (Ops) CRM & Customer Communications Engine
 
